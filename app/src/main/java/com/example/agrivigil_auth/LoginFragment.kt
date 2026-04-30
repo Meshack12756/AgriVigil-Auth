@@ -1,0 +1,61 @@
+package com.example.agrivigil_auth
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.example.agrivigil_auth.databinding.FragmentLoginBinding
+
+class LoginFragment : Fragment() {
+
+    private var _binding: FragmentLoginBinding? = null
+    private val binding get() = _binding!!
+    private lateinit var authRepo: AuthRepository
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        authRepo = (requireActivity().application as MyApplication).authRepo
+
+        binding.loginButton.setOnClickListener {
+            val email = binding.emailInput.text.toString()
+            val pass = binding.passwordInput.text.toString()
+
+            if (email.isNotEmpty() && pass.isNotEmpty()) {
+                authRepo.login(email, pass) { success, error ->
+                    if (success) {
+                        Toast.makeText(context, "Successfully logged in", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+                    } else {
+                        Toast.makeText(context, "Login failed: $error", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.signUpLink.setOnClickListener {
+            findNavController().navigate(R.id.action_loginFragment_to_signUpFragment)
+        }
+
+        binding.forgotPasswordText.setOnClickListener {
+            findNavController().navigate(R.id.forgotPasswordFragment)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
