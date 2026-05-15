@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.agrivigil_auth.databinding.FragmentHomeBinding
 
@@ -14,10 +15,12 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var authRepo: AuthRepository
+    private val farmerViewModel: FarmerViewModel by viewModels()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
@@ -27,8 +30,17 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         authRepo = (requireActivity().application as MyApplication).authRepo
 
-        // Set the welcome message
-        binding.welcomeText.text = "Welcome to AgriVigil"
+        // Observe farmer data
+        farmerViewModel.farmerData.observe(viewLifecycleOwner) { farmer ->
+            if (farmer != null) {
+                binding.welcomeText.text = getString(R.string.welcome_message, farmer.firstName)
+            } else {
+                binding.welcomeText.text = getString(R.string.welcome_default)
+            }
+        }
+
+        // Fetch data
+        farmerViewModel.fetchFarmerData()
 
         binding.settingsButton.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_settings)
